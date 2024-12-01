@@ -1,6 +1,8 @@
 import 'package:e_commerce/authentication_pages/textField_widget.dart';
 import 'package:e_commerce/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,23 +24,37 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           Stack(
             children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Image.asset(
+                  "assets/Bubbles.png",
+                  fit: BoxFit.cover,
+                ),
+              ),
               Padding(
-                padding: const EdgeInsets.only(top: 50.0, left: 16.0),
+                padding:  EdgeInsets.only(top: 190.h, left: 30.0),
+                child: Column(
+                  children: [
+                    Text("CREATE \nACCOUNT",
+                        textAlign: TextAlign.start,
+                        style: GoogleFonts.raleway(
+                            fontSize: 30.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black)),
+
+                  ],
+                ),
+              ),
+              Padding(
+                padding:  EdgeInsets.only(top: 320.h, left: 30.0),
                 child: SizedBox(
                     child: SizedBox(
-                        width: 50.w, child: Image.asset('assets/camera.png'))),
+                        width: 100.w, child: Image.asset('assets/camera.png'))),
               ),
             ],
           ),
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: Image.asset(
-              "assets/Bubbles.png",
-              fit: BoxFit.cover,
-            ),
-          ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 30.h),
             child: Column(
               children: [
                 TextFieldWidget('Email', _emailController, false),
