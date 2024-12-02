@@ -1,4 +1,5 @@
-import 'package:e_commerce/authentication_pages/login.dart';
+import 'package:e_commerce/authentication_pages/create_account_page.dart';
+import 'package:e_commerce/authentication_pages/login_page.dart';
 import 'package:e_commerce/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -52,7 +53,11 @@ class _WelcomePageState extends State<WelcomePage> {
                 borderRadius: BorderRadius.circular(16.r),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              /// TODO Buraya Push named yapısı kurulacak
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const CreateAccountPage()));
+            },
             child: Text(
               "Let's Get Started",
               style: GoogleFonts.nunitoSans(
@@ -67,7 +72,7 @@ class _WelcomePageState extends State<WelcomePage> {
             onTap: () {
               /// TODO Buraya Push named yapısı kurulacak
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => LoginPage()));
+                  MaterialPageRoute(builder: (context) => const LoginPage()));
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

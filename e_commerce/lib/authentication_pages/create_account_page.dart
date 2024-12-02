@@ -1,17 +1,18 @@
 import 'package:e_commerce/authentication_pages/textField_widget.dart';
+import 'package:e_commerce/authentication_pages/widget/authentication_button.dart';
 import 'package:e_commerce/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class CreateAccountPage extends StatefulWidget {
+  const CreateAccountPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<CreateAccountPage> createState() => _CreateAccountPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _CreateAccountPageState extends State<CreateAccountPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -32,13 +33,13 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               Padding(
-                padding:  EdgeInsets.only(top: 190.h, left: 30.0),
+                padding:  EdgeInsets.only(top: 140.h, left: 30.0),
                 child: Column(
                   children: [
                     Text("CREATE \nACCOUNT",
                         textAlign: TextAlign.start,
                         style: GoogleFonts.raleway(
-                            fontSize: 30.sp,
+                            fontSize: 50.sp,
                             fontWeight: FontWeight.w700,
                             color: Colors.black)),
 
@@ -49,25 +50,19 @@ class _LoginPageState extends State<LoginPage> {
                 padding:  EdgeInsets.only(top: 320.h, left: 30.0),
                 child: SizedBox(
                     child: SizedBox(
-                        width: 100.w, child: Image.asset('assets/camera.png'))),
+                        width: 90.w, child: Image.asset('assets/camera.png'))),
               ),
             ],
           ),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 30.h),
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.h),
             child: Column(
               children: [
                 TextFieldWidget('Email', _emailController, false),
                 const SizedBox(height: 16.0),
                 TextFieldWidget('Password', _passwordController, true),
-                const SizedBox(height: 16.0),
-                ElevatedButton(
-                  onPressed: () {
-                    // Handle login logic
-                    ///
-                  },
-                  child: const Text('Login'),
-                ),
+                SizedBox(height: 50.h),
+                AuthenticationBuuttonWidget("Done", (){})
               ],
             ),
           ),
