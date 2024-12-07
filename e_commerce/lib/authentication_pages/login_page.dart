@@ -1,3 +1,4 @@
+import 'package:e_commerce/authentication_pages/password_screeen.dart';
 import 'package:e_commerce/authentication_pages/textField_widget.dart';
 import 'package:e_commerce/authentication_pages/widget/authentication_button.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,9 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(height: 25.h),
                 TextFieldWidget('Email', _emailController, false),
                 SizedBox(height: 37.h),
-                AuthenticationBuuttonWidget('Done', (){}),
+                AuthenticationBuuttonWidget('Next', (){
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => const PasswordScreeen()));
+                }),
                 
               ],
             ),

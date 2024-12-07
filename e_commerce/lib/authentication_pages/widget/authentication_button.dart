@@ -16,7 +16,7 @@ Widget AuthenticationBuuttonWidget(String text, Function onPressed) {
       onPressed();
     },
     child: Text(
-      'Done',
+      text,
       style: GoogleFonts.nunitoSans(
         fontSize: 22.sp,
         fontWeight: FontWeight.w300,
