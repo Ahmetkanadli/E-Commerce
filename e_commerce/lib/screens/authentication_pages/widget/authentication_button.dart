@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-Widget AuthenticationBuuttonWidget(String text, Function onPressed) {
+Widget AuthenticationBuuttonWidget(String text, Function? onPressed) {
   return ElevatedButton(
     style: ElevatedButton.styleFrom(
       backgroundColor: const Color(0xFF004CFF),
@@ -12,9 +12,7 @@ Widget AuthenticationBuuttonWidget(String text, Function onPressed) {
         borderRadius: BorderRadius.circular(16.r),
       ),
     ),
-    onPressed: () {
-      onPressed();
-    },
+    onPressed: onPressed == null ? null : () => onPressed(),
     child: Text(
       text,
       style: GoogleFonts.nunitoSans(
