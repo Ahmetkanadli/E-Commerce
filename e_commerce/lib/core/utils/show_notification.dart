@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ShowNotification {
   static void showNotification({
@@ -10,6 +11,7 @@ class ShowNotification {
     String? buttonText1,
     String? buttonText2,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) {
@@ -19,12 +21,12 @@ class ShowNotification {
           actions: <Widget>[
             CupertinoDialogAction(
               isDefaultAction: true,
-              child: Text(buttonText1 ?? 'OK'),
+              child: Text(buttonText1 ?? l10n.ok),
               onPressed: onPressFunction,
             ),
             if (onPressFunction2 != null)
               CupertinoDialogAction(
-                child: Text(buttonText2 ?? 'Cancel'),
+                child: Text(buttonText2 ?? l10n.cancel),
                 onPressed: onPressFunction2,
               ),
           ],

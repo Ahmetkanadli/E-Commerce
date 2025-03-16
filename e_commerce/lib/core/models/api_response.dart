@@ -9,7 +9,7 @@ class ApiResponse<T> {
     required this.success,
     required this.message,
     this.data,
-    required this.statusCode,
+    this.statusCode = 200,
     this.token,
   });
 
@@ -22,7 +22,7 @@ class ApiResponse<T> {
           ? fromJson(json['data'])
           : null,
       token: json['token'],
-      statusCode: 200,
+      statusCode: json['statusCode'] ?? 200,
     );
   }
 

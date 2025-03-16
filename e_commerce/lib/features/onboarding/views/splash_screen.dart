@@ -1,4 +1,9 @@
-import 'package:e_commerce/welcome.dart';
+import 'package:e_commerce/features/auth/views/auth_controller.dart';
+import 'package:e_commerce/core/repository/auth_repository.dart';
+import 'package:e_commerce/features/activity/views/activity_screen.dart';
+import 'package:e_commerce/features/onboarding/views/welcome.dart';
+import 'package:e_commerce/core/api/api_client.dart';
+import 'package:e_commerce/core/api/api_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,18 +17,40 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
+  late final AuthController _authController;
+
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+
+    // Initialize AuthController
+    final apiClient = ApiClient(baseUrl: ApiConstants.baseUrl);
+    final authRepository = AuthRepository(apiClient);
+    _authController = AuthController(authRepository);
+
     _navigateToNextScreen();
   }
 
   Future<void> _navigateToNextScreen() async {
     await Future.delayed(const Duration(seconds: 2));
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const WelcomePage()),
-    );
+
+    // Check authentication status
+    await _authController.checkAuthStatus();
+
+    if (!mounted) return;
+
+    if (_authController.token != null) {
+      // User is authenticated, navigate to ActivityScreen
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const ActivityScreen()),
+      );
+    } else {
+      // User is not authenticated, navigate to WelcomePage
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const WelcomePage()),
+      );
+    }
   }
 
   @override

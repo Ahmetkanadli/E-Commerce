@@ -1,0 +1,299 @@
+{
+    "appName": "Shoppie",
+    "@appName": {
+        "description": "The name of the application"
+    },
+    "welcomeMessage": "Welcome to Shoppie, your one-stop shop for all your needs.",
+    "@welcomeMessage": {
+        "description": "Welcome message shown on the welcome screen"
+    },
+    "alreadyHaveAccount": "Already have an account?",
+    "@alreadyHaveAccount": {
+        "description": "Text for login link"
+    },
+    "loginTitle": "Login",
+    "@loginTitle": {
+        "description": "Title for login screen"
+    },
+    "welcomeBack": "Welcome back! Please login to continue.",
+    "@welcomeBack": {
+        "description": "Welcome message on login screen"
+    },
+    "email": "Email",
+    "@email": {
+        "description": "Label for email field"
+    },
+    "password": "Password",
+    "@password": {
+        "description": "Label for password field"
+    },
+    "enterPassword": "Please enter your password to continue.",
+    "@enterPassword": {
+        "description": "Message on password screen"
+    },
+    "next": "Next",
+    "@next": {
+        "description": "Next button text"
+    },
+    "login": "Login",
+    "@login": {
+        "description": "Text for login button"
+    },
+    "settings": "Settings",
+    "@settings": {
+        "description": "Title for settings screen"
+    },
+    "personal": "Personal",
+    "@personal": {
+        "description": "Personal section header"
+    },
+    "profile": "Profile",
+    "@profile": {
+        "description": "Profile menu item"
+    },
+    "shippingAddress": "Shipping Address",
+    "@shippingAddress": {
+        "description": "Shipping address menu item"
+    },
+    "paymentMethods": "Payment Methods",
+    "@paymentMethods": {
+        "description": "Title for payment methods screen"
+    },
+    "shop": "Shop",
+    "@shop": {
+        "description": "Shop section header"
+    },
+    "country": "Country",
+    "@country": {
+        "description": "Country menu item"
+    },
+    "currency": "Currency",
+    "@currency": {
+        "description": "Currency menu item"
+    },
+    "sizes": "Sizes",
+    "@sizes": {
+        "description": "Sizes menu item"
+    },
+    "termsAndConditions": "Terms and Conditions",
+    "@termsAndConditions": {
+        "description": "Terms and conditions menu item"
+    },
+    "account": "Account",
+    "@account": {
+        "description": "Account section header"
+    },
+    "language": "Language",
+    "@language": {
+        "description": "Language menu item"
+    },
+    "about": "About Slada",
+    "@about": {
+        "description": "About menu item"
+    },
+    "version": "Version 1.0 April, 2020",
+    "@version": {
+        "description": "App version text"
+    },
+    "deleteAccount": "Delete My Account",
+    "@deleteAccount": {
+        "description": "Delete account button text"
+    },
+    "logout": "Log Out",
+    "@logout": {
+        "description": "Logout button text"
+    },
+    "validationErrorTitle": "Validation Error",
+    "@validationErrorTitle": {
+        "description": "Title for validation error messages"
+    },
+    "emailRequired": "Please enter your email",
+    "@emailRequired": {
+        "description": "Error message when email is empty"
+    },
+    "invalidEmail": "Please enter a valid email address",
+    "@invalidEmail": {
+        "description": "Error message when email is invalid"
+    },
+    "passwordRequired": "Please enter your password",
+    "@passwordRequired": {
+        "description": "Error message when password is empty"
+    },
+    "loginError": "Login Error",
+    "@loginError": {
+        "description": "Title for login error messages"
+    },
+    "createAccount": "Create Account",
+    "@createAccount": {
+        "description": "Text for create account button"
+    },
+    "welcomeCommunity": "Welcome to our community! Please create an account to continue.",
+    "@welcomeCommunity": {
+        "description": "Welcome message on create account screen"
+    },
+    "loading": "Loading...",
+    "@loading": {
+        "description": "Loading text"
+    },
+    "announcement": "Announcement",
+    "@announcement": {
+        "description": "Title for announcement section"
+    },
+    "announcementText": "Check out our latest collection of summer fashion!",
+    "@announcementText": {
+        "description": "Text for announcement"
+    },
+    "recentlyViewed": "Recently Viewed",
+    "@recentlyViewed": {
+        "description": "Title for recently viewed section"
+    },
+    "myOrders": "My Orders",
+    "@myOrders": {
+        "description": "Title for orders section"
+    },
+    "toPay": "To Pay",
+    "@toPay": {
+        "description": "Label for to pay orders"
+    },
+    "toReceive": "To Receive",
+    "@toReceive": {
+        "description": "Label for to receive orders"
+    },
+    "toReview": "To Review",
+    "@toReview": {
+        "description": "Label for to review orders"
+    },
+    "yourProfile": "Your Profile",
+    "@yourProfile": {
+        "description": "Title for profile section"
+    },
+    "name": "Name",
+    "@name": {
+        "description": "Label for name field"
+    },
+    "saveChanges": "Save Changes",
+    "@saveChanges": {
+        "description": "Text for save changes button"
+    },
+    "noCardsYet": "No cards added yet",
+    "@noCardsYet": {
+        "description": "Message when no cards are added"
+    },
+    "cardHolder": "Card Holder",
+    "@cardHolder": {
+        "description": "Label for card holder field"
+    },
+    "cardNumber": "Card Number",
+    "@cardNumber": {
+        "description": "Label for card number field"
+    },
+    "valid": "Valid Until",
+    "@valid": {
+        "description": "Label for card expiry field"
+    },
+    "cvv": "CVV",
+    "@cvv": {
+        "description": "Label for CVV field"
+    },
+    "expires": "Expires",
+    "@expires": {
+        "description": "Label for expiry date"
+    },
+    "editCard": "Edit Card",
+    "@editCard": {
+        "description": "Title for edit card dialog"
+    },
+    "addCard": "Add Card",
+    "@addCard": {
+        "description": "Title for add card dialog"
+    },
+    "cardHolderRequired": "Please enter card holder name",
+    "@cardHolderRequired": {
+        "description": "Error message when card holder name is empty"
+    },
+    "nameTooShort": "Name is too short",
+    "@nameTooShort": {
+        "description": "Error message when name is too short"
+    },
+    "cardNumberRequired": "Please enter card number",
+    "@cardNumberRequired": {
+        "description": "Error message when card number is empty"
+    },
+    "invalidCardNumber": "Please enter a valid card number",
+    "@invalidCardNumber": {
+        "description": "Error message when card number is invalid"
+    },
+    "invalidFormat": "Invalid format",
+    "@invalidFormat": {
+        "description": "Error message when format is invalid"
+    },
+    "invalidDate": "Invalid date",
+    "@invalidDate": {
+        "description": "Error message when date is invalid"
+    },
+    "cardExpired": "Card has expired",
+    "@cardExpired": {
+        "description": "Error message when card has expired"
+    },
+    "myActivity": "My Activity",
+    "@myActivity": {
+        "description": "Title for activity screen"
+    },
+    "home": "Home",
+    "@home": {
+        "description": "Home navigation item"
+    },
+    "wishlist": "Wishlist",
+    "@wishlist": {
+        "description": "Wishlist navigation item"
+    },
+    "orders": "Orders",
+    "serverError": "Server Error",
+    "@serverError": {
+        "description": "Generic server error message title"
+    },
+    "networkError": "Network Error",
+    "@networkError": {
+        "description": "Network connection error message title"
+    },
+    "connectionFailed": "Connection failed. Please check your internet connection and try again.",
+    "@connectionFailed": {
+        "description": "Message shown when network connection fails"
+    },
+    "unknownError": "An unknown error occurred. Please try again later.",
+    "@unknownError": {
+        "description": "Generic error message for unexpected errors"
+    },
+    "sessionExpired": "Your session has expired. Please login again.",
+    "@sessionExpired": {
+        "description": "Message shown when user session expires"
+    },
+    "retry": "Retry",
+    "@retry": {
+        "description": "Text for retry button"
+    },
+    "messages": "Messages",
+    "@messages": {
+        "description": "Messages navigation item"
+    },
+    "yourCards": "Your Cards",
+    "@yourCards": {
+        "description": "Title for cards section"
+    },
+    "stories": "Stories",
+    "@stories": {
+        "description": "Title for stories section"
+    },
+    "live": "Live",
+    "@live": {
+        "description": "Label for live status"
+    },
+    "ok": "OK",
+    "@ok": {
+        "description": "Text for OK button"
+    },
+    "cancel": "Cancel",
+    "@cancel": {
+        "description": "Text for cancel button"
+    }
+} 

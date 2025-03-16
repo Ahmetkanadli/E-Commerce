@@ -1,9 +1,10 @@
 import 'package:dartz/dartz.dart';
+import 'package:e_commerce/features/products/models/product_model.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_constants.dart';
 import '../../../core/error/failures.dart';
 import '../../../core/repository/base_repository.dart';
-import '../models/product_model.dart';
+
 
 abstract class IProductRepository {
   Future<Either<Failure, List<ProductModel>>> getAllProducts();

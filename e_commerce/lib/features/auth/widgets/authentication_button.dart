@@ -7,7 +7,7 @@ Widget AuthenticationBuuttonWidget(String text, Function? onPressed) {
   return ElevatedButton(
     style: ElevatedButton.styleFrom(
       backgroundColor: const Color(0xFF004CFF),
-      minimumSize: Size(double.infinity, 61.h),
+      minimumSize: Size(double.infinity, 41.h),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.r),
       ),

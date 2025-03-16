@@ -1,9 +1,9 @@
-import 'package:e_commerce/authentication_pages/create_account_page.dart';
-import 'package:e_commerce/authentication_pages/login_page.dart';
-import 'package:e_commerce/main.dart';
+import 'package:e_commerce/features/auth/views/create_account_page.dart';
+import 'package:e_commerce/features/auth/views/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -15,6 +15,7 @@ class WelcomePage extends StatefulWidget {
 class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Center(
           child: Column(
@@ -27,7 +28,7 @@ class _WelcomePageState extends State<WelcomePage> {
           ),
           SizedBox(height: 50.h),
           Text(
-            "SHOPPIE",
+            l10n.appName,
             style: GoogleFonts.raleway(
               fontSize: 30.sp,
               fontWeight: FontWeight.bold,
@@ -35,16 +36,14 @@ class _WelcomePageState extends State<WelcomePage> {
           ),
           SizedBox(height: 18.h),
           Text(
-            "Alışverişin Yeni Yüzü",
+            l10n.welcomeMessage,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunitoSans(
               fontSize: 19.sp,
               fontWeight: FontWeight.w300,
             ),
           ),
-          SizedBox(
-            height: 86.h,
-          ),
+          SizedBox(height: 86.h),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF004CFF),
@@ -55,11 +54,13 @@ class _WelcomePageState extends State<WelcomePage> {
             ),
             onPressed: () {
               /// TODO Buraya Push named yapısı kurulacak
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const CreateAccountPage()));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const CreateAccountPage()));
             },
             child: Text(
-              "Let's Get Started",
+              l10n.createAccount,
               style: GoogleFonts.nunitoSans(
                 fontSize: 18.sp,
                 color: Colors.white,
@@ -78,7 +79,7 @@ class _WelcomePageState extends State<WelcomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Already have an account?",
+                  l10n.alreadyHaveAccount,
                   style: GoogleFonts.nunitoSans(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w300,

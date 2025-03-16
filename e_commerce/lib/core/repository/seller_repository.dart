@@ -1,9 +1,10 @@
 import 'package:dartz/dartz.dart';
+import 'package:e_commerce/features/sellers/models/seller_model.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_constants.dart';
 import '../../../core/error/failures.dart';
 import '../../../core/repository/base_repository.dart';
-import '../models/seller_model.dart';
+
 
 abstract class ISellerRepository {
   Future<Either<Failure, SellerModel>> registerAsSeller(

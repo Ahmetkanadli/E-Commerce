@@ -1,20 +1,32 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/error/failures.dart';
 import '../../../core/utils/show_notification.dart';
 import '../../../core/models/api_response.dart';
-import '../repositories/auth_repository.dart';
+import '../../../core/models/user_model.dart';
+import '../../../core/cache/cache_manager.dart';
+import '../../../core/repository/auth_repository.dart';
 
 class AuthController extends ChangeNotifier {
   final IAuthRepository _authRepository;
   bool isLoading = false;
   String? error;
   String? _token;
+  UserModel? _currentUser;
 
-  // Getter for token
+  // Getters
   String? get token => _token;
+  UserModel? get currentUser => _currentUser;
 
   AuthController(this._authRepository);
+
+  Future<void> checkAuthStatus() async {
+    _token = await CacheManager.getToken();
+    if (_token != null) {
+      _currentUser = await CacheManager.getUserData();
+    }
+    notifyListeners();
+  }
 
   Future<bool> login(
       String email, String password, BuildContext context) async {
@@ -43,9 +55,13 @@ class AuthController extends ChangeNotifier {
         isLoading = false;
         if (response.token != null) {
           _token = response.token;
-          // Save token to SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('auth_token', response.token!);
+          _currentUser = response.data;
+
+          // Save user data using CacheManager
+          await CacheManager.saveToken(response.token!);
+          if (_currentUser != null) {
+            await CacheManager.saveUserData(_currentUser!);
+          }
         }
         notifyListeners();
         return true;
@@ -55,8 +71,8 @@ class AuthController extends ChangeNotifier {
 
   Future<void> logout() async {
     _token = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
+    _currentUser = null;
+    await CacheManager.clearCache();
     notifyListeners();
   }
 
@@ -87,9 +103,13 @@ class AuthController extends ChangeNotifier {
         isLoading = false;
         if (response.token != null) {
           _token = response.token;
-          // Save token to SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('auth_token', response.token!);
+          _currentUser = response.data;
+
+          // Save user data using CacheManager
+          await CacheManager.saveToken(response.token!);
+          if (_currentUser != null) {
+            await CacheManager.saveUserData(_currentUser!);
+          }
         }
         notifyListeners();
         return true;

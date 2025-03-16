@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:e_commerce/features/settings/views/settings_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ActivityScreen extends StatelessWidget {
   const ActivityScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -14,24 +17,25 @@ class ActivityScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(),
-                _buildAnnouncement(),
+                _buildHeader(context),
+                _buildAnnouncement(l10n),
                 SizedBox(height: 24.h),
-                _buildRecentlyViewed(),
+                _buildRecentlyViewed(l10n),
                 SizedBox(height: 24.h),
-                _buildMyOrders(),
+                _buildMyOrders(l10n),
                 SizedBox(height: 24.h),
-                _buildStories(),
+                _buildStories(context),
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      bottomNavigationBar: _buildBottomNavigationBar(l10n),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -43,7 +47,7 @@ class ActivityScreen extends StatelessWidget {
             ),
             SizedBox(width: 12.w),
             Text(
-              'My Activity',
+              l10n.myActivity,
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
@@ -63,7 +67,12 @@ class ActivityScreen extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(Icons.settings_outlined),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingsScreen()),
+                );
+              },
             ),
           ],
         ),
@@ -71,7 +80,7 @@ class ActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAnnouncement() {
+  Widget _buildAnnouncement(AppLocalizations l10n) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 16.h),
       padding: EdgeInsets.all(16.r),
@@ -87,14 +96,14 @@ class ActivityScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Announcement',
+                  l10n.announcement,
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+                  l10n.announcementText,
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: Colors.grey[600],
@@ -109,12 +118,12 @@ class ActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentlyViewed() {
+  Widget _buildRecentlyViewed(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Recently viewed',
+          l10n.recentlyViewed,
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -130,7 +139,8 @@ class ActivityScreen extends StatelessWidget {
                 margin: EdgeInsets.only(right: 12.w),
                 child: CircleAvatar(
                   radius: 30.r,
-                  backgroundImage: AssetImage('assets/images/product_$index.jpg'),
+                  backgroundImage:
+                      AssetImage('assets/images/product_$index.jpg'),
                 ),
               ),
             ),
@@ -140,12 +150,12 @@ class ActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMyOrders() {
+  Widget _buildMyOrders(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'My Orders',
+          l10n.myOrders,
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -154,11 +164,11 @@ class ActivityScreen extends StatelessWidget {
         SizedBox(height: 12.h),
         Row(
           children: [
-            _buildOrderButton('To Pay', Colors.blue[50]!),
+            _buildOrderButton(l10n.toPay, Colors.blue[50]!),
             SizedBox(width: 12.w),
-            _buildOrderButton('To Recieve', Colors.blue[50]!),
+            _buildOrderButton(l10n.toReceive, Colors.blue[50]!),
             SizedBox(width: 12.w),
-            _buildOrderButton('To Review', Colors.blue[50]!),
+            _buildOrderButton(l10n.toReview, Colors.blue[50]!),
           ],
         ),
       ],
@@ -185,12 +195,13 @@ class ActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStories() {
+  Widget _buildStories(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Stories',
+          l10n.stories,
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -227,7 +238,7 @@ class ActivityScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
-                            'Live',
+                            l10n.live,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 12.sp,
@@ -244,29 +255,29 @@ class ActivityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
+  Widget _buildBottomNavigationBar(AppLocalizations l10n) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      items: const [
+      items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
-          label: 'Home',
+          label: l10n.home,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.favorite_border),
-          label: 'Wishlist',
+          label: l10n.wishlist,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.list_alt_outlined),
-          label: 'Orders',
+          label: l10n.orders,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.message_outlined),
-          label: 'Messages',
+          label: l10n.messages,
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
-          label: 'Profile',
+          label: l10n.profile,
         ),
       ],
       currentIndex: 0,
@@ -274,4 +285,4 @@ class ActivityScreen extends StatelessWidget {
       unselectedItemColor: Colors.grey,
     );
   }
-} 
+}

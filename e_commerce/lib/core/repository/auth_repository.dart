@@ -1,9 +1,8 @@
 import 'package:dartz/dartz.dart';
-import '../../../core/api/api_client.dart';
-import '../../../core/api/api_constants.dart';
-import '../../../core/error/failures.dart';
-import '../../../core/models/api_response.dart';
-import '../../../core/repository/base_repository.dart';
+import '../api/api_client.dart';
+import '../api/api_constants.dart';
+import '../error/failures.dart';
+import '../models/api_response.dart';
 import '../models/user_model.dart';
 
 abstract class IAuthRepository {
@@ -15,22 +14,29 @@ abstract class IAuthRepository {
   Future<Either<Failure, bool>> deleteUser(String email);
 }
 
-class AuthRepository extends BaseRepository implements IAuthRepository {
+class AuthRepository implements IAuthRepository {
   final ApiClient _apiClient;
 
   AuthRepository(this._apiClient);
 
   @override
   Future<Either<Failure, ApiResponse<UserModel>>> login(
-      String email, String password) async {
-    return safeApiCall(() async {
+    String email,
+    String password,
+  ) async {
+    try {
       final response = await _apiClient.post(
         ApiConstants.login,
-        body: {'email': email, 'password': password},
+        data: {
+          'email': email,
+          'password': password,
+        },
         fromJson: (json) => UserModel.fromJson(json['user'] ?? json),
       );
-      return response;
-    });
+      return Right(response);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
@@ -39,37 +45,45 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
     String email,
     String password,
   ) async {
-    return safeApiCall(() async {
+    try {
       final response = await _apiClient.post(
         ApiConstants.register,
-        body: {
+        data: {
           'name': name,
           'email': email,
           'password': password,
         },
         fromJson: (json) => UserModel.fromJson(json['user'] ?? json),
       );
-      return response;
-    });
+      return Right(response);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
   Future<Either<Failure, bool>> verifyEmail(String token) async {
-    return safeApiCall(() async {
+    try {
       final response = await _apiClient.get(
         '${ApiConstants.verifyEmail}/$token',
+        fromJson: (json) => json['success'] as bool,
       );
-      return response.success;
-    });
+      return Right(response.success);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
   Future<Either<Failure, bool>> deleteUser(String email) async {
-    return safeApiCall(() async {
+    try {
       final response = await _apiClient.delete(
         '${ApiConstants.deleteUser}/$email',
+        fromJson: (json) => json['success'] as bool,
       );
-      return response.success;
-    });
+      return Right(response.success);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
   }
 }
