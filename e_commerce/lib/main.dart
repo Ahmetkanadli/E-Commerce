@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:e_commerce/features/activity/views/activity_screen.dart';
+import 'package:e_commerce/features/main_screen.dart';
 import 'package:e_commerce/features/onboarding/views/splash_screen.dart';
 import 'package:e_commerce/core/providers/locale_provider.dart';
 import 'package:flutter/material.dart';
@@ -7,11 +7,24 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:e_commerce/features/auth/views/auth_controller.dart';
+import 'package:e_commerce/core/api/api_client.dart';
+import 'package:e_commerce/core/api/api_constants.dart';
+import 'package:e_commerce/core/repository/auth_repository.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => LocaleProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider(
+          create: (context) => AuthController(
+            AuthRepository(
+              ApiClient(baseUrl: ApiConstants.baseUrl),
+            ),
+          )..checkAuthStatus(),
+        ),
+      ],
       child: const MyApp(),
     ),
   );
@@ -38,7 +51,12 @@ class MyApp extends StatelessWidget {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             locale: localeProvider.locale,
-            home: const SplashScreen(),
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const SplashScreen(),
+              '/main': (context) => const MainScreen(),
+              '/login': (context) => const Scaffold(body: Center(child: Text('Login Screen'))),
+            },
           ),
         );
       },

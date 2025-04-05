@@ -248,6 +248,9 @@
         "description": "Wishlist navigation item"
     },
     "orders": "Orders",
+    "@orders": {
+        "description": "Orders navigation item"
+    },
     "serverError": "Server Error",
     "@serverError": {
         "description": "Generic server error message title"
@@ -295,5 +298,9 @@
     "cancel": "Cancel",
     "@cancel": {
         "description": "Text for cancel button"
+    },
+    "popularProducts": "Popular Products",
+    "@popularProducts": {
+        "description": "Title for popular products section"
     }
 } 

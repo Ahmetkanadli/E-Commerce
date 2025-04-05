@@ -66,6 +66,7 @@
     "wishlist": "İstek Listesi",
     "orders": "Siparişler",
     "messages": "Mesajlar",
+    "popularProducts": "Popüler Ürünler",
     "serverError": "Sunucu Hatası",
     "networkError": "Ağ Hatası",
     "connectionFailed": "Bağlantı başarısız. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.",

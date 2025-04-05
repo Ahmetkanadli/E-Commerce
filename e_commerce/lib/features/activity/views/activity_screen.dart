@@ -2,12 +2,99 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:e_commerce/features/settings/views/settings_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:e_commerce/core/api/api_client.dart';
+import 'package:e_commerce/core/api/api_constants.dart';
+import 'package:e_commerce/core/repository/product_repository.dart';
+import 'package:e_commerce/features/products/models/product_model.dart';
+import 'package:e_commerce/features/products/models/category_products.dart';
+import 'dart:developer' as developer;
+import 'package:e_commerce/features/products/views/product_detail_screen.dart';
+import 'package:e_commerce/features/wishlist/views/wishlist_screen.dart';
+import 'package:e_commerce/features/cart/views/cart_screen.dart';
+import 'package:e_commerce/features/profile/views/profile_screen.dart';
 
-class ActivityScreen extends StatelessWidget {
+class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
 
   @override
+  State<ActivityScreen> createState() => _ActivityScreenState();
+}
+
+class _ActivityScreenState extends State<ActivityScreen> {
+  final List<String> categories = ['Giyim', 'Elektronik', 'Spor', 'Kitap', 'Ev', 'Kozmetik'];
+  final List<CategoryProducts> categoryProducts = [];
+  bool isLoading = true;
+
+  void _logInfo(String message) {
+    developer.log('🔵 INFO: $message');
+    print('🔵 INFO: $message');
+  }
+
+  void _logError(String message, [Object? error, StackTrace? stackTrace]) {
+    developer.log('🔴 ERROR: $message', error: error, stackTrace: stackTrace);
+    print('🔴 ERROR: $message');
+    if (error != null) {
+      print('Error details: $error');
+    }
+    if (stackTrace != null) {
+      print('Stack trace: $stackTrace');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _logInfo('ActivityScreen initialized');
+    _loadCategoryProducts();
+  }
+
+  Future<void> _loadCategoryProducts() async {
+    _logInfo('Starting to load category products');
+    setState(() {
+      isLoading = true;
+    });
+
+    final apiClient = ApiClient(baseUrl: ApiConstants.baseUrl);
+    final productRepository = ProductRepository(apiClient);
+    
+    _logInfo('API client and repository initialized');
+    _logInfo('Base URL: ${ApiConstants.baseUrl}');
+    _logInfo('Products by category endpoint: ${ApiConstants.productsByCategory}');
+
+    for (final category in categories) {
+      _logInfo('Loading products for category: $category');
+      try {
+        final endpoint = '${ApiConstants.productsByCategory}/$category';
+        _logInfo('Making request to: $endpoint');
+        
+        final result = await productRepository.getProductsByCategory(category);
+        result.fold(
+          (failure) {
+            _logError('Failed to load products for $category: ${failure.message}', failure);
+          },
+          (products) {
+            _logInfo('Successfully loaded ${products.length} products for $category');
+            setState(() {
+              categoryProducts.add(
+                CategoryProducts(category: category, products: products),
+              );
+            });
+          },
+        );
+      } catch (e, stackTrace) {
+        _logError('Exception occurred while loading $category', e, stackTrace);
+      }
+    }
+
+    _logInfo('Finished loading all categories. Total loaded: ${categoryProducts.length}');
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    developer.log('Building ActivityScreen');
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
@@ -25,12 +112,13 @@ class ActivityScreen extends StatelessWidget {
                 _buildMyOrders(l10n),
                 SizedBox(height: 24.h),
                 _buildStories(context),
+                SizedBox(height: 24.h),
+                _buildCategoryProductsSection(),
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(l10n),
     );
   }
 
@@ -43,7 +131,8 @@ class ActivityScreen extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 20.r,
-              backgroundImage: AssetImage('assets/images/profile.jpg'),
+              backgroundColor: Colors.grey[200],
+              child: Icon(Icons.person, color: Colors.grey[600]),
             ),
             SizedBox(width: 12.w),
             Text(
@@ -118,6 +207,184 @@ class ActivityScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildCategoryProductsSection() {
+    if (isLoading) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context)!.popularProducts,
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 16.h),
+        ...categoryProducts.map((categoryProduct) => _buildCategoryRow(categoryProduct)).toList(),
+      ],
+    );
+  }
+
+  Widget _buildCategoryRow(CategoryProducts categoryProduct) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          child: Text(
+            categoryProduct.category,
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 200.h,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: categoryProduct.products.length,
+            itemBuilder: (context, index) {
+              final product = categoryProduct.products[index];
+              return _buildProductCard(product);
+            },
+          ),
+        ),
+        SizedBox(height: 16.h),
+      ],
+    );
+  }
+
+  Widget _buildProductCard(ProductModel product) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(product: product),
+          ),
+        );
+      },
+      child: Container(
+        width: 150.w,
+        margin: EdgeInsets.only(right: 12.w),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product Image Gallery
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10.r),
+                topRight: Radius.circular(10.r),
+              ),
+              child: SizedBox(
+                height: 120.h,
+                child: product.images.isEmpty
+                  ? _buildPlaceholderImage()
+                  : product.images.length == 1
+                    ? _buildSingleImage(product.images.first)
+                    : _buildImageGallery(product.images),
+              ),
+            ),
+            // Product Info
+            Padding(
+              padding: EdgeInsets.all(8.r),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    '₺${product.price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildPlaceholderImage() {
+    return Container(
+      color: Colors.grey[200],
+      child: Center(
+        child: Icon(Icons.image_not_supported, color: Colors.grey),
+      ),
+    );
+  }
+  
+  Widget _buildSingleImage(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
+    );
+  }
+  
+  Widget _buildImageGallery(List<String> images) {
+    return PageView.builder(
+      itemCount: images.length,
+      itemBuilder: (context, index) {
+        return Stack(
+          children: [
+            // Image
+            SizedBox(
+              width: double.infinity,
+              child: Image.network(
+                images[index],
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
+              ),
+            ),
+            // Page indicator
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                margin: EdgeInsets.only(bottom: 8.h),
+                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Text(
+                  '${index + 1}/${images.length}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10.sp,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildRecentlyViewed(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,8 +406,11 @@ class ActivityScreen extends StatelessWidget {
                 margin: EdgeInsets.only(right: 12.w),
                 child: CircleAvatar(
                   radius: 30.r,
-                  backgroundImage:
-                      AssetImage('assets/images/product_$index.jpg'),
+                  backgroundColor: Colors.primaries[index % Colors.primaries.length].withOpacity(0.2),
+                  child: Icon(
+                    Icons.image,
+                    color: Colors.primaries[index % Colors.primaries.length],
+                  ),
                 ),
               ),
             ),
@@ -219,13 +489,20 @@ class ActivityScreen extends StatelessWidget {
                 height: 200.h,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12.r),
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/story_$index.jpg'),
-                    fit: BoxFit.cover,
-                  ),
+                  color: Colors.primaries[(index + 5) % Colors.primaries.length].withOpacity(0.3),
                 ),
-                child: index == 0
-                    ? Align(
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.play_circle_outline,
+                        size: 50.r,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (index == 0)
+                      Align(
                         alignment: Alignment.topLeft,
                         child: Container(
                           margin: EdgeInsets.all(8.r),
@@ -245,44 +522,14 @@ class ActivityScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                      )
-                    : null,
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildBottomNavigationBar(AppLocalizations l10n) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      items: [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          label: l10n.home,
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite_border),
-          label: l10n.wishlist,
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.list_alt_outlined),
-          label: l10n.orders,
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.message_outlined),
-          label: l10n.messages,
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          label: l10n.profile,
-        ),
-      ],
-      currentIndex: 0,
-      selectedItemColor: Colors.blue,
-      unselectedItemColor: Colors.grey,
     );
   }
 }

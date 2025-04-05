@@ -24,18 +24,55 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely handle different field types
+    String safeString(dynamic value) {
+      if (value == null) return '';
+      if (value is String) return value;
+      return value.toString();
+    }
+
+    // Helper function to safely convert string or number to double
+    double safeDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) {
+        try {
+          return double.parse(value);
+        } catch (_) {
+          return 0.0;
+        }
+      }
+      return 0.0;
+    }
+
+    // Helper function to safely handle images field
+    List<String> safeImages(dynamic images) {
+      if (images == null) return [];
+      if (images is List) {
+        return images.map((e) => safeString(e)).toList();
+      }
+      if (images is String) {
+        // Single image as string
+        return [images];
+      }
+      return [];
+    }
+
     return ProductModel(
-      id: json['_id'] ?? '',
-      sellerId: json['seller'] ?? '',
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      price: (json['price'] ?? 0.0).toDouble(),
-      category: json['category'] ?? '',
-      stock: json['stock'] ?? 0,
-      images: List<String>.from(json['images'] ?? []),
-      isActive: json['isActive'] ?? true,
+      id: safeString(json['_id']),
+      sellerId: safeString(json['seller']),
+      name: safeString(json['name']),
+      description: safeString(json['description']),
+      price: safeDouble(json['price']),
+      category: safeString(json['category']),
+      stock: json['stock'] is int ? json['stock'] : 0,
+      images: safeImages(json['images']),
+      isActive: json['isActive'] is bool ? json['isActive'] : true,
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+          ? (json['createdAt'] is String 
+              ? DateTime.parse(json['createdAt'])
+              : DateTime.now())
           : DateTime.now(),
     );
   }

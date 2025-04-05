@@ -108,14 +108,7 @@ class _PasswordScreeenState extends State<PasswordScreeen> {
                         TextFieldWidget(
                             l10n.password, _passwordController, true),
                         SizedBox(height: 37.h),
-                        if (widget.authController.error != null)
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 10.h),
-                            child: Text(
-                              widget.authController.error!,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
+                        
                         AuthenticationBuuttonWidget(
                           widget.authController.isLoading
                               ? l10n.loading

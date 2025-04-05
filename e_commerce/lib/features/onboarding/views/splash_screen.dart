@@ -7,6 +7,7 @@ import 'package:e_commerce/core/api/api_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:e_commerce/features/main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -41,9 +42,9 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     if (_authController.token != null) {
-      // User is authenticated, navigate to ActivityScreen
+      // User is authenticated, navigate to MainScreen
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const ActivityScreen()),
+        MaterialPageRoute(builder: (context) => const MainScreen()),
       );
     } else {
       // User is not authenticated, navigate to WelcomePage
