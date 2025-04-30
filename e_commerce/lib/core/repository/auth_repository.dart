@@ -10,6 +10,8 @@ abstract class IAuthRepository {
       String email, String password);
   Future<Either<Failure, ApiResponse<UserModel>>> register(
       String name, String email, String password);
+  Future<Either<Failure, ApiResponse<UserModel>>> signup(
+      String name, String email, String password);
   Future<Either<Failure, bool>> verifyEmail(String token);
   Future<Either<Failure, bool>> deleteUser(String email);
 }
@@ -48,6 +50,28 @@ class AuthRepository implements IAuthRepository {
     try {
       final response = await _apiClient.post(
         ApiConstants.register,
+        data: {
+          'name': name,
+          'email': email,
+          'password': password,
+        },
+        fromJson: (json) => UserModel.fromJson(json['user'] ?? json),
+      );
+      return Right(response);
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ApiResponse<UserModel>>> signup(
+    String name,
+    String email,
+    String password,
+  ) async {
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.signup,
         data: {
           'name': name,
           'email': email,

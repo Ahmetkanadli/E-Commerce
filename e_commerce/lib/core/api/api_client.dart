@@ -150,22 +150,52 @@ class ApiClient {
     required T Function(Map<String, dynamic>) fromJson,
   }) async {
     try {
+      developer.log('🔍 ApiClient: POST request to $path with data: $data');
       final response = await _dio.post(path, data: data);
+      
+      developer.log('✅ ApiClient: POST response received: ${response.data}');
+      
+      // Check if response data is a Map
+      if (response.data is! Map<String, dynamic>) {
+        developer.log('⚠️ ApiClient: Response is not a Map: ${response.data}');
+        return ApiResponse.error(
+          'Invalid response format',
+          statusCode: response.statusCode ?? 500,
+        );
+      }
+      
+      final responseData = response.data as Map<String, dynamic>;
+      
+      // Safely extract data field for parsing
+      Map<String, dynamic> dataToProcess = {};
+      if (responseData.containsKey('data')) {
+        if (responseData['data'] is Map<String, dynamic>) {
+          dataToProcess = responseData['data'];
+        } else {
+          developer.log('⚠️ ApiClient: data field is not a Map: ${responseData['data']}');
+          dataToProcess = responseData; // Fall back to the whole response
+        }
+      } else {
+        dataToProcess = responseData; // No data field, use the whole response
+      }
+      
       return ApiResponse<T>(
-        success: true,
-        message: response.data['message'] ?? 'Success',
-        data: fromJson(response.data['data'] ?? response.data),
-        token: response.data['token'],
+        success: responseData['status'] == 'success' || responseData.containsKey('success') && responseData['success'] == true,
+        message: responseData['message'] ?? 'Success',
+        data: fromJson(dataToProcess),
+        token: responseData['token'],
         statusCode: response.statusCode ?? 200,
       );
     } catch (e) {
+      developer.log('❌ ApiClient: Error in POST request: $e');
       if (e is DioException && e.response != null) {
+        developer.log('❌ ApiClient: DioException data: ${e.response?.data}');
         return ApiResponse.error(
-          e.response?.data['message'] ?? e.message ?? 'Error occurred',
+          e.response?.data is Map ? e.response?.data['message'] ?? e.message ?? 'Error occurred' : e.message ?? 'Error occurred',
           statusCode: e.response?.statusCode ?? 500,
         );
       }
-      throw Exception(e.toString());
+      return ApiResponse.error(e.toString());
     }
   }
 

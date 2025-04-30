@@ -72,5 +72,6 @@
     "connectionFailed": "Bağlantı başarısız. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.",
     "unknownError": "Bilinmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
     "sessionExpired": "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.",
-    "retry": "Tekrar Dene"
+    "retry": "Tekrar Dene",
+    "becomeSeller": "Satıcı Ol"
 } 

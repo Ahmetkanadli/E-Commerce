@@ -116,4 +116,35 @@ class AuthController extends ChangeNotifier {
       },
     );
   }
+
+  Future<bool> signup(
+      String name, String email, String password, BuildContext context) async {
+    isLoading = true;
+    error = null;
+    notifyListeners();
+
+    final result = await _authRepository.signup(name, email, password);
+
+    return result.fold(
+      (failure) {
+        error = failure.message;
+        isLoading = false;
+        notifyListeners();
+
+        ShowNotification.showNotification(
+          title: 'Registration Error',
+          message: failure.message,
+          context: context,
+          onPressFunction: () => Navigator.pop(context),
+        );
+
+        return false;
+      },
+      (response) async {
+        isLoading = false;
+        notifyListeners();
+        return true;  // Başarılı kaydolmada token saklamıyoruz, sadece başarılı döndürüyoruz
+      },
+    );
+  }
 }

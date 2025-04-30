@@ -5,6 +5,7 @@ import 'package:e_commerce/core/api/api_constants.dart';
 import 'package:e_commerce/features/auth/views/login_page.dart';
 import 'package:e_commerce/features/profile/views/profile_screen.dart';
 import 'package:e_commerce/features/payment/views/payment_methods_screen.dart';
+import 'package:e_commerce/features/seller/views/seller_registration_screen.dart';
 import 'package:e_commerce/features/onboarding/views/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -102,6 +103,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Divider(),
               _buildSectionHeader(l10n.shop),
               ListTile(
+                title: Text(l10n.becomeSeller),
+                leading: const Icon(Icons.store),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  _showSellerDialog(context);
+                },
+              ),
+              ListTile(
                 title: Text(l10n.country),
                 leading: const Icon(Icons.public),
                 onTap: () {},
@@ -168,6 +177,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showSellerDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.becomeSeller),
+        content: const Text("Satıcı olmak ve ürünlerinizi satmak için başvuru yapın. Başvurunuz onaylandıktan sonra ürün yüklemeye başlayabilirsiniz."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Satıcı başvuru sayfasına yönlendirme
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => const SellerRegistrationScreen()),
+              );
+            },
+            child: Text(l10n.ok),
+          ),
+        ],
       ),
     );
   }

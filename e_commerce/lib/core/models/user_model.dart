@@ -24,32 +24,87 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // Extract favorites list
+    // Extract favorites list with better type handling
     List<Map<String, dynamic>> favsList = [];
-    if (json['favorites'] != null && json['favorites'] is List) {
-      favsList = (json['favorites'] as List)
-          .map((item) => item is Map<String, dynamic> 
-              ? item 
-              : <String, dynamic>{})
-          .toList();
+    
+    try {
+      if (json['favorites'] != null) {
+        if (json['favorites'] is List) {
+          favsList = (json['favorites'] as List).map((item) {
+            if (item is Map<String, dynamic>) {
+              return item;
+            } else if (item is Map) {
+              // Convert to Map<String, dynamic>
+              return Map<String, dynamic>.from(item);
+            }
+            // Return empty map for other types to avoid crashes
+            return <String, dynamic>{};
+          }).toList();
+        } else if (json['favorites'] is Map) {
+          // Handle case where favorites might be a map instead of a list
+          Map<String, dynamic> favsMap = Map<String, dynamic>.from(json['favorites'] as Map);
+          favsList = [favsMap];
+        }
+      }
+    } catch (e) {
+      print('Error parsing favorites: $e');
+      // Use empty list in case of any parsing error
+    }
+
+    String id = '';
+    if (json['_id'] != null) {
+      id = json['_id'].toString();
+    } else if (json['id'] != null) {
+      id = json['id'].toString();
     }
 
     return UserModel(
-      id: json['_id'] ?? '',
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      role: json['role'] ?? 'user',
-      emailVerified: json['emailVerified'] ?? false,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
-      address: json['address'] is Map<String, dynamic> 
-          ? json['address'] as Map<String, dynamic>
-          : null,
+      id: id,
+      name: json['name']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      role: json['role']?.toString() ?? 'user',
+      emailVerified: json['emailVerified'] == true,
+      createdAt: _parseDateTime(json['createdAt']),
+      address: _safeMapConversion(json['address']),
       favorites: favsList,
-      cart: json['cart'] is Map<String, dynamic> ? json['cart'] as Map<String, dynamic> : null,
-      stats: json['stats'] is Map<String, dynamic> ? json['stats'] as Map<String, dynamic> : null,
+      cart: _safeMapConversion(json['cart']),
+      stats: _safeMapConversion(json['stats']),
     );
+  }
+
+  // Helper to safely convert various input types to DateTime
+  static DateTime _parseDateTime(dynamic input) {
+    if (input == null) return DateTime.now();
+    
+    if (input is String) {
+      try {
+        return DateTime.parse(input);
+      } catch (_) {
+        return DateTime.now();
+      }
+    } else if (input is int) {
+      // Handle timestamp
+      return DateTime.fromMillisecondsSinceEpoch(input);
+    }
+    
+    return DateTime.now();
+  }
+  
+  // Helper to safely convert to Map<String, dynamic>
+  static Map<String, dynamic>? _safeMapConversion(dynamic input) {
+    if (input == null) return null;
+    
+    if (input is Map<String, dynamic>) {
+      return input;
+    } else if (input is Map) {
+      try {
+        return Map<String, dynamic>.from(input);
+      } catch (_) {
+        return {};
+      }
+    }
+    
+    return null;
   }
 
   Map<String, dynamic> toJson() {

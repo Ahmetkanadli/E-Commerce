@@ -302,5 +302,9 @@
     "popularProducts": "Popular Products",
     "@popularProducts": {
         "description": "Title for popular products section"
+    },
+    "becomeSeller": "Become a Seller",
+    "@becomeSeller": {
+        "description": "Button text for becoming a seller"
     }
 } 
