@@ -126,41 +126,44 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
         throw Exception('Oturum açmanız gerekiyor');
       }
 
-      // FormData oluştur
-      final formData = FormData();
-      formData.fields.addAll([
-        MapEntry('shopName', _shopNameController.text),
-        MapEntry('description', _descriptionController.text),
-        MapEntry('phone', _phoneController.text),
-        MapEntry('address[street]', _streetController.text),
-        MapEntry('address[city]', _cityController.text),
-        MapEntry('address[state]', _stateController.text),
-        MapEntry('address[zipCode]', _zipCodeController.text),
-        MapEntry('address[country]', _countryController.text),
-        MapEntry('documentType', _documentType),
-      ]);
+      // Dosya yollarını listeye al - @ işaretini kaldırıyorum
+      final List<String> documentPaths = _documents.map((file) => file.path).toList();
+      
+      // API'ye gönderilecek JSON verisi - adres bilgilerini düzgün JSON olarak formatlıyoruz
+      final Map<String, dynamic> requestData = {
+        'shopName': _shopNameController.text,
+        'description': _descriptionController.text,
+        'phone': _phoneController.text,
+        'address': {
+          'street': _streetController.text,
+          'city': _cityController.text,
+          'state': _stateController.text,
+          'zipCode': _zipCodeController.text,
+          'country': _countryController.text,
+        },
+        'documentType': _documentType,
+        'documents': documentPaths,
+      };
 
-      // Belgeleri ekle
-      for (int i = 0; i < _documents.length; i++) {
-        final file = _documents[i];
-        final fileName = file.path.split('/').last;
-        formData.files.add(
-          MapEntry(
-            'documents',
-            await MultipartFile.fromFile(file.path, filename: fileName),
-          ),
-        );
-      }
+      print('Gönderilen veri: ${requestData}'); // Debug için
 
       // API isteği gönder
       final dio = Dio();
       final response = await dio.post(
         '${ApiConstants.baseUrl}${ApiConstants.registerAsSeller}',
-        data: formData,
+        data: requestData,
         options: Options(
-          headers: {'Authorization': 'Bearer $token'},
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          validateStatus: (status) {
+            return status! < 500;
+          }
         ),
       );
+
+      print('API yanıtı: ${response.statusCode} - ${response.data}'); // Debug için
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (mounted) {
@@ -173,7 +176,7 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
           Navigator.pop(context);
         }
       } else {
-        throw Exception('Başvuru gönderilirken bir hata oluştu: ${response.statusMessage}');
+        throw Exception('Başvuru gönderilirken bir hata oluştu: ${response.statusCode} - ${response.data}');
       }
     } catch (e) {
       if (mounted) {

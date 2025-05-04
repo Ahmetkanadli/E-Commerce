@@ -12,6 +12,7 @@ import 'package:e_commerce/core/models/card_model.dart';
 import 'package:e_commerce/core/models/user_model.dart';
 import 'dart:developer' as developer;
 import 'package:e_commerce/core/cache/cache_manager.dart';
+import 'package:flutter/services.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -254,29 +255,425 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
   
   Future<void> _addCard() async {
-    // Kart ekleme işlevselliği için
-    // Bu bir örnek implementasyondur, gerçek bir uygulamada
-    // kullanıcıdan kart bilgilerini almak için bir form gösterilmelidir
-    
-    final bool result = await showDialog(
+    final _cardHolderController = TextEditingController();
+    final _cardNumberController = TextEditingController();
+    final _validController = TextEditingController();
+    final _cvvController = TextEditingController();
+    bool _isLoading = false;
+    final _formKey = GlobalKey<FormState>();
+
+    final result = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => Text('Not implemented'),
-    ) ?? false;
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.r),
+          topRight: Radius.circular(20.r),
+        ),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Padding(
+          padding: EdgeInsets.only(
+            left: 16.w, 
+            right: 16.w,
+            top: 20.h,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16.h
+          ),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header with Title and Close Button
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Add Card',
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  
+                  SizedBox(height: 32.h),
+                  
+                  // Card Holder
+                  Text('Card Holder'),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Required',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  TextFormField(
+                    controller: _cardHolderController,
+                    decoration: InputDecoration(
+                      hintText: 'Ad Soyad',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Kart sahibi adı gereklidir';
+                      }
+                      return null;
+                    },
+                  ),
+                  
+                  SizedBox(height: 24.h),
+                  
+                  // Card Number
+                  Text('Card Number'),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Required',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  TextFormField(
+                    controller: _cardNumberController,
+                    decoration: InputDecoration(
+                      hintText: 'XXXX XXXX XXXX XXXX',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(16),
+                      _CardNumberFormatter(),
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Kart numarası gereklidir';
+                      }
+                      if (value.replaceAll(' ', '').length < 16) {
+                        return 'Geçerli bir kart numarası girin';
+                      }
+                      return null;
+                    },
+                  ),
+                  
+                  SizedBox(height: 24.h),
+                  
+                  // Valid & CVV in row
+                  Row(
+                    children: [
+                      // Valid (Expiry Date)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Valid'),
+                            SizedBox(height: 4.h),
+                            Text(
+                              'Required',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            TextFormField(
+                              controller: _validController,
+                              decoration: InputDecoration(
+                                hintText: 'MM/YY',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(4),
+                                _ExpiryDateFormatter(),
+                              ],
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Son kullanma tarihi gereklidir';
+                                }
+                                RegExp regExp = RegExp(r'^\d{2}/\d{2}$');
+                                if (!regExp.hasMatch(value)) {
+                                  return 'MM/YY formatında girin';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      SizedBox(width: 16.w),
+                      
+                      // CVV
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('CVV'),
+                            SizedBox(height: 4.h),
+                            Text(
+                              'Required',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            TextFormField(
+                              controller: _cvvController,
+                              decoration: InputDecoration(
+                                hintText: 'XXX',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(3),
+                              ],
+                              obscureText: true,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'CVV gereklidir';
+                                }
+                                if (value.length < 3) {
+                                  return 'Geçerli bir CVV girin';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  SizedBox(height: 40.h),
+                  
+                  // Save Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50.h,
+                    child: ElevatedButton(
+                      onPressed: _isLoading 
+                        ? null 
+                        : () async {
+                            if (_formKey.currentState?.validate() ?? false) {
+                              setState(() {
+                                _isLoading = true;
+                              });
+                              
+                              try {
+                                final cardData = {
+                                  'cardNumber': _cardNumberController.text.replaceAll(' ', ''),
+                                  'cardHolderName': _cardHolderController.text,
+                                  'expiryDate': _validController.text,
+                                  'cvv': _cvvController.text,
+                                  'cardType': 'Visa', // Varsayılan olarak Visa
+                                };
+                                
+                                final result = await _userRepository.addCard(cardData);
+                                
+                                result.fold(
+                                  (failure) {
+                                    developer.log('🔴 Card addition failed: ${failure.message}');
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Kart eklenemedi: ${failure.message}'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                    Navigator.pop(context, false);
+                                  },
+                                  (card) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Kart başarıyla eklendi'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                    Navigator.pop(context, true);
+                                  },
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Kart eklenirken hata oluştu: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                Navigator.pop(context, false);
+                              }
+                            }
+                          },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? SizedBox(
+                              width: 24.w,
+                              height: 24.h,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.w,
+                              ),
+                            )
+                          : Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
     
-    if (result) {
+    if (result == true) {
       _loadUserCards();
     }
   }
   
   Future<void> _updateCard(CardModel card) async {
-    // Kart güncelleme işlevselliği için
-    final bool result = await showDialog(
+    final cardNumberController = TextEditingController(text: card.cardNumber);
+    final cardHolderNameController = TextEditingController(text: card.cardHolderName);
+    final expiryDateController = TextEditingController(text: card.expiryDate);
+    final nicknameController = TextEditingController(text: card.nickname);
+    
+    final cardTypes = ['Visa', 'MasterCard', 'American Express', 'Discover', 'Diğer'];
+    String selectedCardType = cardTypes.contains(card.cardType) ? card.cardType : cardTypes[0];
+    
+    final formKey = GlobalKey<FormState>();
+    
+    bool result = await showDialog(
       context: context,
-      builder: (context) => Text('Not implemented'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Kartı Düzenle'),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedCardType,
+                    decoration: InputDecoration(
+                      labelText: 'Kart Tipi',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: cardTypes.map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type),
+                    )).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedCardType = value;
+                        });
+                      }
+                    },
+                  ),
+                  SizedBox(height: 16.h),
+                  TextFormField(
+                    controller: nicknameController,
+                    decoration: InputDecoration(
+                      labelText: 'Kart Takma Adı (İsteğe Bağlı)',
+                      border: OutlineInputBorder(),
+                      hintText: 'Örn: İş Kartım',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('İptal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (formKey.currentState?.validate() ?? false) {
+                  Navigator.of(context).pop(true);
+                }
+              },
+              child: Text('Güncelle'),
+            ),
+          ],
+        ),
+      ),
     ) ?? false;
     
-    if (result) {
+    if (!result) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final cardData = {
+        'cardType': selectedCardType,
+        'nickname': nicknameController.text,
+      };
+      
+      final result = await _userRepository.updateCard(card.id, cardData);
+      
+      result.fold(
+        (failure) {
+          developer.log('🔴 Card update failed: ${failure.message}');
+          _showMessage('Kart güncellenemedi: ${failure.message}', isError: true);
+        },
+        (updatedCard) {
+          _showMessage('Kart başarıyla güncellendi');
       _loadUserCards();
+        },
+      );
+    } catch (e) {
+      _showMessage('Kart güncellenirken hata oluştu: $e', isError: true);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
   
@@ -649,6 +1046,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       SizedBox(height: 8.h),
                       ElevatedButton(
                         onPressed: _addCard,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                        ),
                         child: Text('Kart Ekle'),
                       ),
                     ],
@@ -1084,6 +1488,66 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           ),
         ],
       ),
+    );
+  }
+}
+
+// Kart numarası formatla
+class _CardNumberFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var text = newValue.text;
+    
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+    
+    var buffer = StringBuffer();
+    for (int i = 0; i < text.length; i++) {
+      buffer.write(text[i]);
+      var nonZeroIndex = i + 1;
+      if (nonZeroIndex % 4 == 0 && nonZeroIndex != text.length) {
+        buffer.write(' ');
+      }
+    }
+    
+    var string = buffer.toString();
+    return newValue.copyWith(
+      text: string,
+      selection: TextSelection.collapsed(offset: string.length),
+    );
+  }
+}
+
+// Son kullanma tarihi formatla MM/YY
+class _ExpiryDateFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var text = newValue.text;
+    
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+    
+    var buffer = StringBuffer();
+    for (int i = 0; i < text.length; i++) {
+      buffer.write(text[i]);
+      var nonZeroIndex = i + 1;
+      if (nonZeroIndex % 2 == 0 && nonZeroIndex != text.length && nonZeroIndex != 4) {
+        buffer.write('/');
+      }
+    }
+    
+    var string = buffer.toString();
+    return newValue.copyWith(
+      text: string,
+      selection: TextSelection.collapsed(offset: string.length),
     );
   }
 }

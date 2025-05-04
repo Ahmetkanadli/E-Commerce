@@ -12,6 +12,7 @@ import 'package:e_commerce/features/products/views/product_detail_screen.dart';
 import 'package:e_commerce/features/wishlist/views/wishlist_screen.dart';
 import 'package:e_commerce/features/cart/views/cart_screen.dart';
 import 'package:e_commerce/features/profile/views/profile_screen.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
@@ -21,9 +22,15 @@ class ActivityScreen extends StatefulWidget {
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
-  final List<String> categories = ['Giyim', 'Elektronik', 'Spor', 'Kitap', 'Ev', 'Kozmetik'];
+  final List<String> categories = ['Elektronik', 'Giyim', 'Ev & Yaşam', 'Kozmetik'];
   final List<CategoryProducts> categoryProducts = [];
   bool isLoading = true;
+  late ProductRepository productRepository;
+  
+  // Tracks which categories are currently loading
+  final Map<String, bool> categoryLoadingStatus = {};
+  bool isRecentlyViewedLoading = true;
+  bool isStoriesLoading = true;
 
   void _logInfo(String message) {
     developer.log('🔵 INFO: $message');
@@ -45,51 +52,90 @@ class _ActivityScreenState extends State<ActivityScreen> {
   void initState() {
     super.initState();
     _logInfo('ActivityScreen initialized');
-    _loadCategoryProducts();
+    
+    // Initialize loading status for each category
+    for (final category in categories) {
+      categoryLoadingStatus[category] = true;
+    }
+    
+    // Initialize repository
+    final apiClient = ApiClient(baseUrl: ApiConstants.baseUrl);
+    productRepository = ProductRepository(apiClient);
+    
+    // Simulate loading states for UI sections
+    _simulateLoadingForUI();
+    
+    // Load one category at a time
+    _loadCategoriesSequentially();
   }
 
-  Future<void> _loadCategoryProducts() async {
-    _logInfo('Starting to load category products');
-    setState(() {
-      isLoading = true;
+  void _simulateLoadingForUI() {
+    // Simulate loading states for different UI sections
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        setState(() {
+          isRecentlyViewedLoading = false;
+        });
+      }
     });
-
-    final apiClient = ApiClient(baseUrl: ApiConstants.baseUrl);
-    final productRepository = ProductRepository(apiClient);
     
-    _logInfo('API client and repository initialized');
-    _logInfo('Base URL: ${ApiConstants.baseUrl}');
-    _logInfo('Products by category endpoint: ${ApiConstants.productsByCategory}');
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() {
+          isStoriesLoading = false;
+        });
+      }
+    });
+  }
 
+  Future<void> _loadCategoriesSequentially() async {
+    _logInfo('Starting to load categories sequentially');
+    
     for (final category in categories) {
-      _logInfo('Loading products for category: $category');
-      try {
-        final endpoint = '${ApiConstants.productsByCategory}/$category';
-        _logInfo('Making request to: $endpoint');
-        
-        final result = await productRepository.getProductsByCategory(category);
-        result.fold(
-          (failure) {
-            _logError('Failed to load products for $category: ${failure.message}', failure);
-          },
-          (products) {
-            _logInfo('Successfully loaded ${products.length} products for $category');
+      await _loadSingleCategory(category);
+    }
+    
+    setState(() {
+      isLoading = false;
+    });
+    
+    _logInfo('Finished loading all categories');
+  }
+  
+  Future<void> _loadSingleCategory(String category) async {
+    _logInfo('Loading products for category: $category');
+    
+    try {
+      final endpoint = '${ApiConstants.productsByCategory}/$category';
+      _logInfo('Making request to: $endpoint');
+      
+      final result = await productRepository.getProductsByCategory(category);
+      
+      result.fold(
+        (failure) {
+          _logError('Failed to load products for $category: ${failure.message}', failure);
+        },
+        (products) {
+          _logInfo('Successfully loaded ${products.length} products for $category');
+          
+          if (mounted) {
             setState(() {
               categoryProducts.add(
                 CategoryProducts(category: category, products: products),
               );
+              categoryLoadingStatus[category] = false;
             });
-          },
-        );
-      } catch (e, stackTrace) {
-        _logError('Exception occurred while loading $category', e, stackTrace);
+          }
+        },
+      );
+    } catch (e, stackTrace) {
+      _logError('Exception occurred while loading $category', e, stackTrace);
+      if (mounted) {
+        setState(() {
+          categoryLoadingStatus[category] = false;
+        });
       }
     }
-
-    _logInfo('Finished loading all categories. Total loaded: ${categoryProducts.length}');
-    setState(() {
-      isLoading = false;
-    });
   }
 
   @override
@@ -208,12 +254,6 @@ class _ActivityScreenState extends State<ActivityScreen> {
   }
 
   Widget _buildCategoryProductsSection() {
-    if (isLoading) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -225,12 +265,21 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ),
         ),
         SizedBox(height: 16.h),
-        ...categoryProducts.map((categoryProduct) => _buildCategoryRow(categoryProduct)).toList(),
+        ...categories.map((category) {
+          final categoryData = categoryProducts.firstWhere(
+            (item) => item.category == category,
+            orElse: () => CategoryProducts(category: category, products: []),
+          );
+          
+          final isLoading = categoryLoadingStatus[category] ?? false;
+          
+          return _buildCategoryRow(categoryData, isLoading);
+        }).toList(),
       ],
     );
   }
 
-  Widget _buildCategoryRow(CategoryProducts categoryProduct) {
+  Widget _buildCategoryRow(CategoryProducts categoryProduct, bool isLoading) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -246,17 +295,80 @@ class _ActivityScreenState extends State<ActivityScreen> {
         ),
         SizedBox(
           height: 200.h,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: categoryProduct.products.length,
-            itemBuilder: (context, index) {
-              final product = categoryProduct.products[index];
-              return _buildProductCard(product);
-            },
-          ),
+          child: isLoading 
+            ? _buildShimmerProductList()
+            : ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: categoryProduct.products.length,
+                itemBuilder: (context, index) {
+                  final product = categoryProduct.products[index];
+                  return _buildProductCard(product);
+                },
+              ),
         ),
         SizedBox(height: 16.h),
       ],
+    );
+  }
+  
+  Widget _buildShimmerProductList() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 4, // Show 4 skeleton items
+        itemBuilder: (context, index) {
+          return _buildShimmerProductCard();
+        },
+      ),
+    );
+  }
+  
+  Widget _buildShimmerProductCard() {
+    return Container(
+      width: 150.w,
+      margin: EdgeInsets.only(right: 12.w),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Shimmer Image
+          Container(
+            height: 120.h,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10.r),
+                topRight: Radius.circular(10.r),
+              ),
+            ),
+          ),
+          // Shimmer Text
+          Padding(
+            padding: EdgeInsets.all(8.r),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 100.w,
+                  height: 14.h,
+                  color: Colors.white,
+                ),
+                SizedBox(height: 4.h),
+                Container(
+                  width: 60.w,
+                  height: 16.h,
+                  color: Colors.white,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -397,26 +509,50 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ),
         ),
         SizedBox(height: 12.h),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(
-              5,
-              (index) => Container(
-                margin: EdgeInsets.only(right: 12.w),
-                child: CircleAvatar(
-                  radius: 30.r,
-                  backgroundColor: Colors.primaries[index % Colors.primaries.length].withOpacity(0.2),
-                  child: Icon(
-                    Icons.image,
-                    color: Colors.primaries[index % Colors.primaries.length],
+        isRecentlyViewedLoading
+            ? _buildShimmerRecentlyViewed()
+            : SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: List.generate(
+                    5,
+                    (index) => Container(
+                      margin: EdgeInsets.only(right: 12.w),
+                      child: CircleAvatar(
+                        radius: 30.r,
+                        backgroundColor: Colors.primaries[index % Colors.primaries.length].withOpacity(0.2),
+                        child: Icon(
+                          Icons.image,
+                          color: Colors.primaries[index % Colors.primaries.length],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
+              ),
+      ],
+    );
+  }
+  
+  Widget _buildShimmerRecentlyViewed() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(
+            5,
+            (index) => Container(
+              margin: EdgeInsets.only(right: 12.w),
+              child: CircleAvatar(
+                radius: 30.r,
+                backgroundColor: Colors.white,
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -478,58 +614,84 @@ class _ActivityScreenState extends State<ActivityScreen> {
           ),
         ),
         SizedBox(height: 12.h),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(
-              4,
-              (index) => Container(
-                margin: EdgeInsets.only(right: 12.w),
-                width: 140.w,
-                height: 200.h,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.r),
-                  color: Colors.primaries[(index + 5) % Colors.primaries.length].withOpacity(0.3),
-                ),
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.center,
-                      child: Icon(
-                        Icons.play_circle_outline,
-                        size: 50.r,
-                        color: Colors.white,
+        isStoriesLoading
+            ? _buildShimmerStories()
+            : SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: List.generate(
+                    4,
+                    (index) => Container(
+                      margin: EdgeInsets.only(right: 12.w),
+                      width: 140.w,
+                      height: 200.h,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.r),
+                        color: Colors.primaries[(index + 5) % Colors.primaries.length].withOpacity(0.3),
                       ),
-                    ),
-                    if (index == 0)
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Container(
-                          margin: EdgeInsets.all(8.r),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8.w,
-                            vertical: 4.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            borderRadius: BorderRadius.circular(4.r),
-                          ),
-                          child: Text(
-                            l10n.live,
-                            style: TextStyle(
+                      child: Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.play_circle_outline,
+                              size: 50.r,
                               color: Colors.white,
-                              fontSize: 12.sp,
                             ),
                           ),
-                        ),
+                          if (index == 0)
+                            Align(
+                              alignment: Alignment.topLeft,
+                              child: Container(
+                                margin: EdgeInsets.all(8.r),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8.w,
+                                  vertical: 4.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(4.r),
+                                ),
+                                child: Text(
+                                  l10n.live,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.sp,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                  ],
+                    ),
+                  ),
                 ),
+              ),
+      ],
+    );
+  }
+  
+  Widget _buildShimmerStories() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(
+            4,
+            (index) => Container(
+              margin: EdgeInsets.only(right: 12.w),
+              width: 140.w,
+              height: 200.h,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12.r),
+                color: Colors.white,
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

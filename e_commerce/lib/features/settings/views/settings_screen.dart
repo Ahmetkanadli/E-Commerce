@@ -5,7 +5,7 @@ import 'package:e_commerce/core/api/api_constants.dart';
 import 'package:e_commerce/features/auth/views/login_page.dart';
 import 'package:e_commerce/features/profile/views/profile_screen.dart';
 import 'package:e_commerce/features/payment/views/payment_methods_screen.dart';
-import 'package:e_commerce/features/seller/views/seller_registration_screen.dart';
+import 'package:e_commerce/features/seller/views/seller_status_screen.dart';
 import 'package:e_commerce/features/onboarding/views/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -196,10 +196,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Satıcı başvuru sayfasına yönlendirme
+              // Satıcı durumu sayfasına yönlendirme
               Navigator.push(
                 context, 
-                MaterialPageRoute(builder: (context) => const SellerRegistrationScreen()),
+                MaterialPageRoute(builder: (context) => const SellerStatusScreen()),
               );
             },
             child: Text(l10n.ok),

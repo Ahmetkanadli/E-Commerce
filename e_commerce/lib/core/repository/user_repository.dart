@@ -221,33 +221,45 @@ class UserRepository extends BaseRepository implements IUserRepository {
     try {
       developer.log('🔵 Fetching user cards');
       final response = await _apiClient.get(
-        ApiConstants.getUserProfileUrl(), // Use profile endpoint instead of cards
+        ApiConstants.getUserCardsUrl(),
         fromJson: (data) => data,
       );
 
       return handleResponse<List<CardModel>>(
         response,
         (data) {
-          if (data is Map<String, dynamic> && data.containsKey('user') && data['user'] is Map) {
-            final userData = data['user'] as Map<String, dynamic>;
-            
-            // Check if savedCards exists in the user data
-            if (userData.containsKey('savedCards') && userData['savedCards'] is List) {
-              developer.log('🔵 Found ${(userData['savedCards'] as List).length} saved cards in user profile');
-              return (userData['savedCards'] as List)
-                  .map((card) => CardModel.fromJson(card))
-                  .toList();
-            } else {
-              developer.log('🔵 No saved cards found in user profile');
-              return <CardModel>[];
-            }
-          } else if (data is List) {
+          developer.log('🔵 Card data structure: ${data.runtimeType}');
+          
+          if (data is List) {
             return data.map((card) => CardModel.fromJson(card)).toList();
-          } else if (data is Map && data.containsKey('cards') && data['cards'] is List) {
-            return (data['cards'] as List).map((card) => CardModel.fromJson(card)).toList();
+          } else if (data is Map<String, dynamic>) {
+            // Check for cards in data field
+            if (data.containsKey('cards') && data['cards'] is List) {
+              return (data['cards'] as List).map((card) => CardModel.fromJson(card)).toList();
+            } 
+            // Check for data.cards structure
+            else if (data.containsKey('data') && data['data'] is Map && data['data'].containsKey('cards') && data['data']['cards'] is List) {
+              return (data['data']['cards'] as List).map((card) => CardModel.fromJson(card)).toList();
+            }
+            // Check if the whole response is a single card
+            else if (data.containsKey('cardNumber')) {
+              return [CardModel.fromJson(data)];
+            }
+            // Check user structure as fallback
+            else if (data.containsKey('user') && data['user'] is Map) {
+              final userData = data['user'] as Map<String, dynamic>;
+              
+              // Check if savedCards exists in the user data
+              if (userData.containsKey('savedCards') && userData['savedCards'] is List) {
+                developer.log('🔵 Found ${(userData['savedCards'] as List).length} saved cards in user profile');
+                return (userData['savedCards'] as List)
+                    .map((card) => CardModel.fromJson(card))
+                    .toList();
+              }
+            }
           }
           
-          developer.log('🔴 Unexpected data structure in getUserCards: ${data.runtimeType}');
+          developer.log('🔴 Card data structure not recognized, returning empty list');
           return <CardModel>[];
         },
       );
